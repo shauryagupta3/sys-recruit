@@ -1,16 +1,14 @@
-version: '3.8'
-
 services:
   psql:
     image: postgres:latest
     environment:
-      POSTGRES_DB: ${DB_DATABASE}
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: recruitment
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
     ports:
-      - "${DB_PORT}:5432"
+      - "5432:5432"
     volumes:
-      - psql_volume:/var/lib/postgresql/data
+      - /home/shaurya/code/data/postgresa:/var/lib/postgresql/data
 
 volumes:
   psql_volume:

@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/joho/godotenv/autoload"
@@ -38,21 +39,48 @@ var (
 	dbInstance *service
 )
 
+func testConnection(ctx context.Context, db *pgxpool.Pool) error {
+	var now time.Time
+	err := db.QueryRow(ctx, "SELECT NOW()").Scan(&now)
+	if err != nil {
+		return fmt.Errorf("failed to execute query: %w", err)
+	}
+	fmt.Println("Current time from database:", now)
+	return nil
+}
+
 func New() Service {
 	// Reuse Connection
 	if dbInstance != nil {
 		return dbInstance
 	}
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable&search_path=%s", username, password, host, port, database, schema)
+	_, err := pgx.Connect(context.Background(), connStr)
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+
 	db, err := pgxpool.New(context.Background(), connStr)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
 
+	if err := testConnection(context.Background(), db); err != nil {
+		log.Fatal("Database connection test failed:", err)
+		os.Exit(1)
+	}
+
+	fmt.Println("database connected")
+	if err := CreateTables(context.Background(), db); err != nil {
+		log.Fatal("Failed to create users table:", err)
+	}
+
 	dbInstance = &service{
 		db: db,
 	}
+
 	return dbInstance
 }
 
