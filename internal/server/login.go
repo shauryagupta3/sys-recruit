@@ -41,8 +41,15 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) error {
 
 	token := GetJWT(user.ID, user.UserType)
 
+	cookie := &http.Cookie{
+		Name:  "token",
+		Value: token,
+		Path:  "/",
+	}
+
+	http.SetCookie(w, cookie)
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(token)
+	json.NewEncoder(w).Encode("token : " + token)
 	return nil
 }
 
@@ -57,7 +64,6 @@ func GetJWT(id int, user_type string) string {
 	return tokenString
 }
 
-
 func loginValidate(u *models.UserLogin) map[string]string {
 	errors := make(map[string]string)
 
@@ -70,4 +76,3 @@ func loginValidate(u *models.UserLogin) map[string]string {
 	}
 	return nil
 }
-
