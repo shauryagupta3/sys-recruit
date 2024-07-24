@@ -23,9 +23,9 @@ const createProfilesTable = `
 CREATE TABLE IF NOT EXISTS profiles (
     user_id INT UNIQUE,
     resume_file_address VARCHAR(255),
-    skills TEXT,
-    education TEXT,
-    experience TEXT,
+    skills varchar(200),
+    education varchar(200),
+    experience varchar(200),
     name VARCHAR(100),
     email VARCHAR(100),
     phone VARCHAR(20),

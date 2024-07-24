@@ -3,6 +3,8 @@ package database
 import (
 	"context"
 	"recruit-sys/internal/models"
+
+	"github.com/jackc/pgx/v5"
 )
 
 func (s *service) CreateJob(u *models.Job) error {
@@ -11,4 +13,17 @@ func (s *service) CreateJob(u *models.Job) error {
 		return err
 	}
 	return nil
+}
+
+func (s *service) SelectAllJobs() ([]models.Job, error) {
+	rows, err := s.db.Query(context.Background(), "SELECT * FROM jobs")
+	if err != nil {
+		return nil, err
+	}
+
+	jobs, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[models.Job])
+	if err != nil {
+		return nil, err
+	}
+	return jobs, err
 }
