@@ -42,7 +42,8 @@ func Make(h APIFunc) http.HandlerFunc {
 			if apiError, ok := err.(APIError); ok {
 				WriteJSON(w, apiError.StatusCode, apiError)
 			} else {
-				WriteJSON(w, http.StatusInternalServerError, map[string]any{"statusCode": http.StatusInternalServerError, "message": err})
+				err := NewAPIError(400, err)
+				WriteJSON(w, 400, err)
 			}
 			slog.Error("API err", "err", err.Error(), "path", r.URL.Path)
 		}

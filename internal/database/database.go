@@ -19,6 +19,9 @@ import (
 type Service interface {
 	CreateUser(*models.User) error
 	SelectUserWhereMail(string) (models.User, error)
+	SelectUserWhereID(float64) (models.User, error)
+	
+	CreateJob(*models.Job) error
 	// Health returns a map of health status information.
 	// The keys and values in the map are service-specific.
 	Health() map[string]string

@@ -35,8 +35,8 @@ CREATE TABLE IF NOT EXISTS profiles (
 const createJobsTable = `
 CREATE TABLE IF NOT EXISTS jobs (
     id SERIAL PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
+    title VARCHAR(100) NOT NULL,
+    description VARCHAR(255),
     posted_on TIMESTAMP DEFAULT NOW(),
     total_applications INTEGER DEFAULT 0,
     company_name VARCHAR(255) NOT NULL,

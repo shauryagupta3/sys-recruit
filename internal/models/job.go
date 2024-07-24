@@ -9,7 +9,7 @@ type Job struct {
 	PostedOn          time.Time `json:"posted_on"`
 	TotalApplications int       `json:"total_applications"`
 	CompanyName       string    `json:"company_name"`
-	PostedByID        uint      `json:"posted_by_id"`
+	PostedByID        int      `json:"posted_by_id"`
 	PostedBy          User      `json:"user"`
 	Profiles          []Profile `json:"profiles"`
 }

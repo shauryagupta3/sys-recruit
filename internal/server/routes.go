@@ -13,13 +13,20 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
+	// default
 	r.Get("/", s.HelloWorldHandler)
+	r.Get("/health", s.healthHandler)
 
+	//public
 	r.Post("/signup", Make(s.handleSignup))
 	r.Post("/login", Make(s.handleLogin))
 
-	r.Get("/health", s.healthHandler)
+	r.Group(func(r chi.Router) {
+		r.Use(ApplicantOnly)
+		// r.Post("/uploadresume",)
+	})
 
+	// protected routes admin
 	r.Mount("/admin", s.adminRouter())
 
 	return r
@@ -29,6 +36,8 @@ func (s *Server) adminRouter() http.Handler {
 	r := chi.NewRouter()
 	r.Use(AdminOnly)
 	r.Get("/", Make(s.handleAdmin))
+	r.Post("/job",Make(s.handlePostJob))
+
 	return r
 }
 
@@ -36,6 +45,19 @@ func AdminOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// If user is admin, allows access.
 		if _, err := AdminProtected(w, r); err == nil {
+			next.ServeHTTP(w, r)
+		} else {
+			// Otherwise, 403.
+			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+			return
+		}
+	})
+}
+
+func ApplicantOnly(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// If user is admin, allows access.
+		if _, err := ApplicantProtected(w, r); err == nil {
 			next.ServeHTTP(w, r)
 		} else {
 			// Otherwise, 403.
