@@ -13,11 +13,6 @@ import (
 
 var SECRET = []byte("this-is-my-secret-for-jwt")
 
-func CheckPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
-}
-
 func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) error {
 
 	var userLogin models.UserLogin
@@ -51,6 +46,11 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) error {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode("token : " + token)
 	return nil
+}
+
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }
 
 func GetJWT(id int, user_type string) string {

@@ -20,7 +20,29 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	r.Get("/health", s.healthHandler)
 
+	r.Mount("/admin", s.adminRouter())
+
 	return r
+}
+
+func (s *Server) adminRouter() http.Handler {
+	r := chi.NewRouter()
+	r.Use(AdminOnly)
+	r.Get("/", s.HelloWorldHandler)
+	return r
+}
+
+func AdminOnly(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// If user is admin, allows access.
+		if _, err := AdminProtected(w, r); err == nil {
+			next.ServeHTTP(w, r)
+		} else {
+			// Otherwise, 403.
+			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+			return
+		}
+	})
 }
 
 func (s *Server) HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
