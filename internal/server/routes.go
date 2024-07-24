@@ -28,7 +28,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 func (s *Server) adminRouter() http.Handler {
 	r := chi.NewRouter()
 	r.Use(AdminOnly)
-	r.Get("/", s.HelloWorldHandler)
+	r.Get("/", Make(s.handleAdmin))
 	return r
 }
 

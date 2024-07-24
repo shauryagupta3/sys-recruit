@@ -80,3 +80,16 @@ func getTypeFromClaims(claims jwt.MapClaims) (string, error) {
 	}
 	return "", fmt.Errorf("type not found in token claims")
 }
+
+func GetUserIDFromJWT(tokenString string) (float64, error) {
+	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return SECRET, nil
+	})
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		fmt.Println(claims)
+		if id, ok := claims["id"].(float64); ok {
+			return id, nil
+		}
+	}
+	return 0, NewAPIError(400, fmt.Errorf("error finding user"))
+}
