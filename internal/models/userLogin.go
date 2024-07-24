@@ -19,7 +19,6 @@ func (u *UserLogin) Validate() map[string]string {
 	if len(u.Password) < 3 {
 		errors["password"] = ("password must be at least 3 characters long")
 	}
-
 	return nil
 }
 

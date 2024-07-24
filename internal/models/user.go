@@ -1,5 +1,10 @@
 package models
 
+import (
+	"strings"
+	"time"
+)
+
 type User struct {
 	ID              int    `json:"id"`
 	Name            string `json:"name"`
@@ -8,6 +13,7 @@ type User struct {
 	UserType        string `json:"user_type"`
 	PasswordHash    string `json:"password_hash"`
 	ProfileHeadline string `json:"profile_headline"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 func (u *User) Validate() map[string]string {
@@ -30,4 +36,12 @@ func (u *User) Validate() map[string]string {
 	}
 
 	return errors
+}
+
+func ProcessUserInput(user *User) {
+	user.Name = strings.ToLower(strings.TrimSpace(user.Name))
+	user.Email = strings.ToLower(strings.TrimSpace(user.Email))
+	user.Address = strings.ToLower(strings.TrimSpace(user.Address))
+	user.UserType = strings.ToLower(strings.TrimSpace(user.UserType))
+	user.ProfileHeadline = strings.ToLower(strings.TrimSpace(user.ProfileHeadline))
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"recruit-sys/internal/models"
 	"strconv"
 	"time"
 
@@ -16,6 +17,8 @@ import (
 
 // Service represents a service that interacts with a database.
 type Service interface {
+	CreateUser(*models.User) error
+	SelectUserWhereMail(string) (models.User, error)
 	// Health returns a map of health status information.
 	// The keys and values in the map are service-specific.
 	Health() map[string]string
@@ -73,8 +76,13 @@ func New() Service {
 	}
 
 	fmt.Println("database connected")
+
+	if err := DropTables(context.Background(), db); err != nil {
+		log.Fatal("Failed to create tables : ", err)
+	}
+
 	if err := CreateTables(context.Background(), db); err != nil {
-		log.Fatal("Failed to create users table:", err)
+		log.Fatal("Failed to create tables : ", err)
 	}
 
 	dbInstance = &service{

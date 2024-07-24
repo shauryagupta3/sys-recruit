@@ -12,15 +12,16 @@ CREATE TABLE IF NOT EXISTS users (
 	id SERIAL PRIMARY KEY,
 	name VARCHAR(50) NOT NULL,
 	email VARCHAR(100) UNIQUE NOT NULL,
-	address VARCHAR(100),
+	address VARCHAR(100) not null,
 	user_type VARCHAR(50) NOT NULL,
-	password_hash TEXT NOT NULL,
+	password_hash VARCHAR(255) NOT NULL,
+    profile_headline VARCHAR(255) not null,
 	created_at TIMESTAMP DEFAULT NOW()
 );
 `
 const createProfilesTable = `
 CREATE TABLE IF NOT EXISTS profiles (
-    user_id INTEGER PRIMARY KEY,
+    user_id INT UNIQUE,
     resume_file_address VARCHAR(255),
     skills TEXT,
     education TEXT,
@@ -63,5 +64,23 @@ func CreateTables(ctx context.Context, db *pgxpool.Pool) error {
 
 	}
 
+	return nil
+}
+
+func DropTables(ctx context.Context, db *pgxpool.Pool) error {
+	tables := []string{
+		"users",
+		"jobs",
+		"profiles",
+		"job_profiles",
+	}
+
+	for _, query := range tables {
+		query := fmt.Sprintf("drop table if exists %s cascade", query)
+		_, err := db.Exec(ctx, query)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
