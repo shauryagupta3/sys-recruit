@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 	"recruit-sys/internal/models"
-	"strings"
+
+	"github.com/jackc/pgx/v5"
 )
 
 func (s *service) CreateUser(u *models.User) error {
@@ -16,29 +17,19 @@ func (s *service) CreateUser(u *models.User) error {
 }
 
 func (s *service) SelectUserWhereMail(email string) (models.User, error) {
-	var user models.User
-
+	// var user models.User
+	
 	query := `
 	SELECT id, name, email, address, user_type, password_hash, profile_headline, created_at
 	FROM users
 	WHERE email = $1`
 
-	err := s.db.QueryRow(context.Background(), query, strings.ToLower(strings.TrimSpace(email))).Scan(
-		&user.ID,
-		&user.Name,
-		&user.Email,
-		&user.Address,
-		&user.UserType,
-		&user.PasswordHash,
-		&user.ProfileHeadline,
-		&user.CreatedAt,
-	)
-
-	if err != nil {
-		return models.User{}, err
+	rows,_ := s.db.Query(context.Background(),query,email)
+	p,err := pgx.CollectOneRow(rows,pgx.RowToStructByName[models.User])
+	if err!=nil {
+		return models.User{},err
 	}
-
-	return user, nil
+	return p, nil
 }
 
 func (s *service) SelectUserWhereID(id float64) (models.User, error) {
