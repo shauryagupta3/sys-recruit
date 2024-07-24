@@ -2,11 +2,16 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"recruit-sys/internal/models"
+	"time"
 
+	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
+
+var SECRET = []byte("this-is-my-secret-for-jwt")
 
 func CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
@@ -21,7 +26,7 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) error {
 		return InvalidJson()
 	}
 
-	if err := userLogin.Validate(); err != nil {
+	if err := loginValidate(&userLogin); err != nil {
 		return InvalidReqJsonData(err)
 	}
 
@@ -30,7 +35,39 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	if !CheckPasswordHash(userLogin.Password, user.PasswordHash) {
+		return NewAPIError(401, fmt.Errorf("unauthorized"))
+	}
+
+	token := GetJWT(user.ID, user.UserType)
+
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(user)
+	json.NewEncoder(w).Encode(token)
 	return nil
 }
+
+func GetJWT(id int, user_type string) string {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id":   id,
+		"type": user_type,
+		"exp":  time.Now().Add(24 * time.Hour).Unix(),
+	})
+
+	tokenString, _ := token.SignedString(SECRET)
+	return tokenString
+}
+
+
+func loginValidate(u *models.UserLogin) map[string]string {
+	errors := make(map[string]string)
+
+	if !isValidEmail(u.Email) {
+		errors["email"] = ("invalid email address")
+	}
+
+	if len(u.Password) < 3 {
+		errors["password"] = ("password must be at least 3 characters long")
+	}
+	return nil
+}
+

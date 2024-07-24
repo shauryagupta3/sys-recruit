@@ -77,9 +77,9 @@ func New() Service {
 
 	fmt.Println("database connected")
 
-	if err := DropTables(context.Background(), db); err != nil {
-		log.Fatal("Failed to create tables : ", err)
-	}
+	// if err := DropTables(context.Background(), db); err != nil {
+	// 	log.Fatal("Failed to create tables : ", err)
+	// }
 
 	if err := CreateTables(context.Background(), db); err != nil {
 		log.Fatal("Failed to create tables : ", err)
