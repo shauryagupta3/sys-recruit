@@ -7,52 +7,57 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-func AdminProtected(w http.ResponseWriter, r *http.Request) (jwt.MapClaims, error) {
-	userType, claims, err := ProtectedHandler(w, r)
+func AdminProtected(w http.ResponseWriter, r *http.Request) (float64, error) {
+	userType, userId,  err := ProtectedHandler(w, r)
 
 	if err != nil {
-		return nil, err
+		return  0, err
 	}
 
 	if userType != "admin" {
-		return nil, NewAPIError(http.StatusForbidden, fmt.Errorf("not authoirized"))
+		return  0, NewAPIError(http.StatusForbidden, fmt.Errorf("not authoirized"))
 	}
 
-	return claims, nil
+	return userId, nil
 }
 
-func ApplicantProtected(w http.ResponseWriter, r *http.Request) (jwt.MapClaims, error) {
-	userType, claims, err := ProtectedHandler(w, r)
+func ApplicantProtected(w http.ResponseWriter, r *http.Request) ( float64, error) {
+	userType, userId,  err := ProtectedHandler(w, r)
 
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
 	if userType != "applicant" {
-		return nil, NewAPIError(http.StatusForbidden, fmt.Errorf("not authoirized"))
+		return 0, NewAPIError(http.StatusForbidden, fmt.Errorf("not authoirized"))
 	}
 
-	return claims, nil
+	return  userId, nil
 }
 
-func ProtectedHandler(w http.ResponseWriter, r *http.Request) (string, jwt.MapClaims, error) {
+func ProtectedHandler(w http.ResponseWriter, r *http.Request) (string, float64, error) {
 	w.Header().Set("Content-Type", "application/json")
 	tokenString := r.Header.Get("Authorization")
 	if tokenString == "" {
-		return "", nil, NewAPIError(http.StatusUnauthorized, fmt.Errorf("no authorization header"))
+		return "", 0,  NewAPIError(http.StatusUnauthorized, fmt.Errorf("no authorization header"))
 	}
 
 	claims, err := verifyToken(tokenString)
 	if err != nil {
-		return "", nil, NewAPIError(http.StatusBadRequest, fmt.Errorf("invalid token"))
+		return "", 0,  NewAPIError(http.StatusBadRequest, fmt.Errorf("invalid token"))
 	}
 
 	userType, err := getTypeFromClaims(claims)
 	if err != nil {
-		return "", nil, err
+		return "", 0,  err
 	}
 
-	return userType, claims, nil
+	userID, err := getIdFromClaims(claims)
+	if err != nil {
+		return "", 0, err
+	}
+
+	return userType, userID, nil
 }
 
 func verifyToken(tokenString string) (jwt.MapClaims, error) {
@@ -79,6 +84,13 @@ func getTypeFromClaims(claims jwt.MapClaims) (string, error) {
 		return UserType, nil
 	}
 	return "", fmt.Errorf("type not found in token claims")
+}
+
+func getIdFromClaims(claims jwt.MapClaims) (float64, error) {
+	if id, ok := claims["id"].(float64); ok {
+		return id, nil
+	}
+	return 0, fmt.Errorf("type not found in token claims")
 }
 
 func GetUserIDFromJWT(tokenString string) (float64, error) {

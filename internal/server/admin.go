@@ -8,14 +8,17 @@ import (
 )
 
 func (s *Server) handleAdmin(w http.ResponseWriter, r *http.Request) error {
-	w.Header().Set("Content-Type", "application/json")
-	tokenString := r.Header.Get("Authorization")
-	userID, err := GetUserIDFromJWT(tokenString)
+	userID, ok := r.Context().Value(UserID).(float64)
+	if !ok {
+		return NewAPIError(http.StatusBadGateway, fmt.Errorf("unable to proceed"))
+	}
+
+	user, err := s.db.SelectUserWhereID(userID)
 	if err != nil {
 		return err
 	}
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode("Hello admin id : " + fmt.Sprintf("%f", userID))
+	json.NewEncoder(w).Encode("Hello admin id : " + fmt.Sprintf("%d", user.ID))
 	return nil
 }
 
@@ -24,12 +27,11 @@ func (s *Server) handlePostJob(w http.ResponseWriter, r *http.Request) error {
 	if err := json.NewDecoder(r.Body).Decode(&job); err != nil {
 		return InvalidJson()
 	}
-	w.Header().Set("Content-Type", "application/json")
-	tokenString := r.Header.Get("Authorization")
-	userID, err := GetUserIDFromJWT(tokenString)
-	if err != nil {
-		return err
+	userID, ok := r.Context().Value(UserID).(float64)
+	if !ok {
+		return NewAPIError(http.StatusBadGateway, fmt.Errorf("unable to proceed"))
 	}
+
 	user, err := s.db.SelectUserWhereID(userID)
 	if err != nil {
 		return err
@@ -45,5 +47,21 @@ func (s *Server) handlePostJob(w http.ResponseWriter, r *http.Request) error {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(job)
+	return nil
+}
+
+func (s *Server) handleGetJobsByAdmin(w http.ResponseWriter, r *http.Request) error {
+	userID, ok := r.Context().Value(UserID).(float64)
+	if !ok {
+		return NewAPIError(http.StatusBadGateway, fmt.Errorf("unable to proceed"))
+	}
+
+	jobs, err := s.db.SelectJobsPostedBy(userID)
+	if err != nil {
+		return err
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(jobs)
 	return nil
 }

@@ -27,3 +27,29 @@ func (s *service) SelectAllJobs() ([]models.Job, error) {
 	}
 	return jobs, err
 }
+
+func (s *service) SelectJobsByID(id int) (models.Job, error) {
+	rows, err := s.db.Query(context.Background(), "SELECT * FROM jobs where id=$1",id)
+	if err != nil {
+		return models.Job{}, err
+	}
+
+	jobs, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByNameLax[models.Job])
+	if err != nil {
+		return models.Job{}, err
+	}
+	return jobs, err
+}
+
+func (s *service) SelectJobsPostedBy(postedById float64) ([]models.Job, error) {
+	rows, err := s.db.Query(context.Background(), "SELECT * FROM jobs where posted_by_id=$1",postedById)
+	if err != nil {
+		return nil, err
+	}
+
+	jobs, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[models.Job])
+	if err != nil {
+		return nil, err
+	}
+	return jobs, err
+}

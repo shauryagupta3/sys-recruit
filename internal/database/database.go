@@ -23,8 +23,13 @@ type Service interface {
 
 	CreateJob(*models.Job) error
 	SelectAllJobs() ([]models.Job, error)
+	SelectJobsPostedBy(float64) ([]models.Job, error)
+	SelectJobsByID(int) (models.Job, error)
 
 	CreateProfile(*models.Profile) error
+	SelectProfileById(float64) (models.Profile,error)
+
+	ApplyToJob(JobId int, UserID int) error
 	// Health returns a map of health status information.
 	// The keys and values in the map are service-specific.
 	Health() map[string]string

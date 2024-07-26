@@ -3,6 +3,8 @@ package database
 import (
 	"context"
 	"recruit-sys/internal/models"
+
+	"github.com/jackc/pgx/v5"
 )
 
 func (s *service) CreateProfile(u *models.Profile) error {
@@ -11,4 +13,30 @@ func (s *service) CreateProfile(u *models.Profile) error {
 		return err
 	}
 	return nil
+}
+
+func (s *service) SelectProfileById(id float64) (models.Profile, error) {
+	rows, err := s.db.Query(context.Background(), "SELECT * FROM profiles where user_id=$1", id)
+	if err != nil {
+		return models.Profile{}, err
+	}
+
+	profile, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByNameLax[models.Profile])
+	if err != nil {
+		return models.Profile{}, err
+	}
+
+	rows, err = s.db.Query(context.Background(), "SELECT * FROM users where id=$1", id)
+	if err != nil {
+		return models.Profile{}, err
+	}
+
+	user, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByNameLax[models.User])
+	if err != nil {
+		return models.Profile{}, err
+	}
+
+	profile.User = user
+
+	return profile, err
 }

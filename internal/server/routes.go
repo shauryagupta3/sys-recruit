@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -8,6 +9,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
+
+type UserIdType float64
+
+const UserID UserIdType = 0
 
 func (s *Server) RegisterRoutes() http.Handler {
 	r := chi.NewRouter()
@@ -20,12 +25,15 @@ func (s *Server) RegisterRoutes() http.Handler {
 	//public
 	r.Post("/signup", Make(s.handleSignup))
 	r.Post("/login", Make(s.handleLogin))
-	r.Get("/jobs",Make(s.GetAllJobs))
+	r.Get("/jobs", Make(s.GetAllJobs))
+	r.Get("/jobs/{id}", Make(s.GetJobById))
 
 	//protected applicant
 	r.Group(func(r chi.Router) {
 		r.Use(ApplicantOnly)
 		r.Post("/uploadresume", Make(s.HandleUploadResume))
+		r.Post("/jobs/{id}/apply", Make(s.ApplyToJobByID))
+		// r.Get("/applications") get that users applications
 	})
 
 	// protected routes admin
@@ -38,15 +46,19 @@ func (s *Server) adminRouter() http.Handler {
 	r := chi.NewRouter()
 	r.Use(AdminOnly)
 	r.Get("/", Make(s.handleAdmin))
-	r.Post("/job", Make(s.handlePostJob))
+	r.Post("/jobs", Make(s.handlePostJob))
+	r.Get("/jobs", Make(s.handleGetJobsByAdmin)) // only jobs posted by admin
+	// r.Get("/job/{id}",) chi,URLParam(r,'id') get details of one job along applicants
+	// r.Get("/applicants", Make(s.handlePostJob)) all applicants
 
 	return r
 }
 
 func AdminOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if _, err := AdminProtected(w, r); err == nil {
-			next.ServeHTTP(w, r)
+		if id, err := AdminProtected(w, r); err == nil {
+			ctx := context.WithValue(r.Context(), UserID, id)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		} else {
 			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 			return
@@ -56,8 +68,9 @@ func AdminOnly(next http.Handler) http.Handler {
 
 func ApplicantOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if _, err := ApplicantProtected(w, r); err == nil {
-			next.ServeHTTP(w, r)
+		if id, err := ApplicantProtected(w, r); err == nil {
+			ctx := context.WithValue(r.Context(), UserID, id)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		} else {
 			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 			return

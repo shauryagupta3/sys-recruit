@@ -13,11 +13,9 @@ import (
 )
 
 func (s *Server) HandleUploadResume(w http.ResponseWriter, r *http.Request) error {
-	w.Header().Set("Content-Type", "application/json")
-	tokenString := r.Header.Get("Authorization")
-	userID, err := GetUserIDFromJWT(tokenString)
-	if err != nil {
-		return err
+	userID, ok := r.Context().Value(UserID).(float64)
+	if !ok {
+		return NewAPIError(http.StatusBadGateway, fmt.Errorf("unable to proceed"))
 	}
 
 	user, err := s.db.SelectUserWhereID(userID)
@@ -34,6 +32,10 @@ func (s *Server) HandleUploadResume(w http.ResponseWriter, r *http.Request) erro
 		fmt.Println("Error Retrieving the File")
 		fmt.Println(err)
 		return NewAPIError(400, err)
+	}
+
+	if filepath.Ext(handler.Filename) != ".pdf" || filepath.Ext(handler.Filename) != ".docx" {
+		return NewAPIError(http.StatusBadRequest,fmt.Errorf("only pdf and docx files accepted"))
 	}
 	defer file.Close()
 
@@ -155,6 +157,7 @@ func BytesToProfile(response []byte) (models.Profile, error) {
 
 	return profile, nil
 }
+
 type ResponseProfile struct {
 	Skills    []string `json:"skills"`
 	Education []struct {
