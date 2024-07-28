@@ -90,3 +90,14 @@ func (s *Server) handleGetJobsByIDAdmin(w http.ResponseWriter, r *http.Request) 
 	json.NewEncoder(w).Encode(job)
 	return nil
 }
+
+func (s *Server) handleGetApplicantsAdmin(w http.ResponseWriter, r *http.Request) error {
+	job, err := s.db.SelectAllProfiles()
+	if err != nil {
+		return err
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(job)
+	return nil
+}

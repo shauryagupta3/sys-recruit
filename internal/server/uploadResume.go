@@ -33,19 +33,18 @@ func (s *Server) HandleUploadResume(w http.ResponseWriter, r *http.Request) erro
 		fmt.Println(err)
 		return NewAPIError(400, err)
 	}
-	
+
 	if filepath.Ext(handler.Filename) != ".pdf" && filepath.Ext(handler.Filename) != ".docx" {
-		return NewAPIError(http.StatusBadRequest,fmt.Errorf("only pdf and docx files accepted"))
+		return NewAPIError(http.StatusBadRequest, fmt.Errorf("only pdf and docx files accepted"))
 	}
 	defer file.Close()
 
-	destDir := "/home/shaurya/code/git/recruit-sys/uploads/"
+	destDir := "/home/shaurya/code/git/sys-recruit/uploads/"
 	if err := os.MkdirAll(destDir, os.ModePerm); err != nil {
 		return err
 	}
 
-	userIdString := fmt.Sprintf("%f", userID)
-	uniqueFileName := userIdString + filepath.Ext(handler.Filename)
+	uniqueFileName := user.Email[:strings.IndexByte(user.Email, '@')] + filepath.Ext(handler.Filename)
 	filePath := filepath.Join(destDir, uniqueFileName)
 
 	dest, err := os.Create(filePath)

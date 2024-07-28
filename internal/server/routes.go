@@ -23,16 +23,16 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Get("/health", s.healthHandler)
 
 	//public
-	r.Post("/signup", Make(s.handleSignup))
-	r.Post("/login", Make(s.handleLogin))
-	r.Get("/jobs", Make(s.GetAllJobs))
-	r.Get("/jobs/{id}", Make(s.GetJobById))
+	r.Post("/signup", Make(s.handleSignup)) // user signin same for applicant and admin
+	r.Post("/login", Make(s.handleLogin)) // login for above
+	r.Get("/jobs", Make(s.GetAllJobs)) // get all jobs
+	r.Get("/jobs/{id}", Make(s.GetJobById)) // get job details
 
 	//protected applicant
 	r.Group(func(r chi.Router) {
 		r.Use(ApplicantOnly)
-		r.Post("/uploadresume", Make(s.HandleUploadResume))
-		r.Post("/jobs/{id}/apply", Make(s.ApplyToJobByID))
+		r.Post("/uploadresume", Make(s.HandleUploadResume)) // upload resume
+		r.Post("/jobs/{id}/apply", Make(s.ApplyToJobByID)) 
 		r.Get("/myapplications",Make(s.GetJobsAppliedBy))
 	})
 
@@ -48,7 +48,8 @@ func (s *Server) adminRouter() http.Handler {
 	r.Get("/", Make(s.handleAdmin))
 	r.Post("/jobs", Make(s.handlePostJob))
 	r.Get("/jobs", Make(s.handleGetJobsByAdmin)) // user not returned well not needed
-	r.Get("/jobs/{id}",Make(s.handleGetJobsByIDAdmin)) 	// r.Get("/applicants", Make(s.handlePostJob)) all applicants
+	r.Get("/jobs/{id}",Make(s.handleGetJobsByIDAdmin)) 	
+	r.Get("/applicants", Make(s.handleGetApplicantsAdmin))// all applicants
 
 	return r
 }

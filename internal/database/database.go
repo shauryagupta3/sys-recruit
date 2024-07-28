@@ -30,6 +30,7 @@ type Service interface {
 
 	CreateProfile(*models.Profile) error
 	SelectProfileById(float64) (models.Profile,error)
+	SelectAllProfiles() ([]models.Profile,error)
 
 	ApplyToJob(JobId int, UserID int) error
 	// Health returns a map of health status information.

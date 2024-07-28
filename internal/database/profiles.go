@@ -26,17 +26,32 @@ func (s *service) SelectProfileById(id float64) (models.Profile, error) {
 		return models.Profile{}, err
 	}
 
-	rows, err = s.db.Query(context.Background(), "SELECT * FROM users where id=$1", id)
-	if err != nil {
-		return models.Profile{}, err
-	}
+	// rows, err = s.db.Query(context.Background(), "SELECT * FROM users where id=$1", id)
+	// if err != nil {
+	// 	return models.Profile{}, err
+	// }
 
-	user, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByNameLax[models.User])
-	if err != nil {
-		return models.Profile{}, err
-	}
+	// user, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByNameLax[models.User])
+	// if err != nil {
+	// 	return models.Profile{}, err
+	// }
 
-	profile.User = user
+	// profile.User = user
 
 	return profile, err
+}
+
+func (s *service) SelectAllProfiles() ([]models.Profile, error) {
+	rows, err := s.db.Query(context.Background(), "SELECT * FROM profiles")
+	if err != nil {
+		return []models.Profile{}, err
+	}
+
+	profiles, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[models.Profile])
+	if err != nil {
+		return []models.Profile{}, err
+	}
+
+
+	return profiles, err
 }
