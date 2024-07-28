@@ -24,6 +24,8 @@ type Service interface {
 	CreateJob(*models.Job) error
 	SelectAllJobs() ([]models.Job, error)
 	SelectJobsPostedBy(float64) ([]models.Job, error)
+	SelectJobByIdAdmin(float64,int) (models.Job, error)
+	SelectJobsAppliedBy(float64) ([]models.Job, error)
 	SelectJobsByID(int) (models.Job, error)
 
 	CreateProfile(*models.Profile) error

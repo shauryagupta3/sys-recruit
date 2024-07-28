@@ -33,8 +33,8 @@ func (s *Server) HandleUploadResume(w http.ResponseWriter, r *http.Request) erro
 		fmt.Println(err)
 		return NewAPIError(400, err)
 	}
-
-	if filepath.Ext(handler.Filename) != ".pdf" || filepath.Ext(handler.Filename) != ".docx" {
+	
+	if filepath.Ext(handler.Filename) != ".pdf" && filepath.Ext(handler.Filename) != ".docx" {
 		return NewAPIError(http.StatusBadRequest,fmt.Errorf("only pdf and docx files accepted"))
 	}
 	defer file.Close()

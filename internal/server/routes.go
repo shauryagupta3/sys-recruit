@@ -33,7 +33,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 		r.Use(ApplicantOnly)
 		r.Post("/uploadresume", Make(s.HandleUploadResume))
 		r.Post("/jobs/{id}/apply", Make(s.ApplyToJobByID))
-		// r.Get("/applications") get that users applications
+		r.Get("/myapplications",Make(s.GetJobsAppliedBy))
 	})
 
 	// protected routes admin
@@ -47,9 +47,8 @@ func (s *Server) adminRouter() http.Handler {
 	r.Use(AdminOnly)
 	r.Get("/", Make(s.handleAdmin))
 	r.Post("/jobs", Make(s.handlePostJob))
-	r.Get("/jobs", Make(s.handleGetJobsByAdmin)) // only jobs posted by admin
-	// r.Get("/job/{id}",) chi,URLParam(r,'id') get details of one job along applicants
-	// r.Get("/applicants", Make(s.handlePostJob)) all applicants
+	r.Get("/jobs", Make(s.handleGetJobsByAdmin)) // user not returned well not needed
+	r.Get("/jobs/{id}",Make(s.handleGetJobsByIDAdmin)) 	// r.Get("/applicants", Make(s.handlePostJob)) all applicants
 
 	return r
 }
