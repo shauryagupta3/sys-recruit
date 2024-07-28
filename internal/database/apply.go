@@ -28,13 +28,13 @@ func (s *service) SelectJobsAppliedBy(userId float64) ([]models.Job, error) {
 }
 
 func (s *service) SelectProfilesAppliedBy(jobId int) ([]models.Profile, error) {
-	rows, err := s.db.Query(context.Background(), "SELECT j.* FROM job_profiles INNER JOIN profiles p ON p.id=job_profiles.profile_id WHERE profile_id=$1", userId)
+	rows, err := s.db.Query(context.Background(), "SELECT p.* FROM job_profiles INNER JOIN profiles p ON p.user_id=job_profiles.profile_id WHERE job_id=$1", jobId)
 	if err != nil {
 		return nil, err
 	}
-	jobs, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[models.Job])
+	profiles, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[models.Profile])
 	if err != nil {
 		return nil, err
 	}
-	return jobs, err
+	return profiles, err
 }

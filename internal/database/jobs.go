@@ -54,15 +54,15 @@ func (s *service) SelectJobsPostedBy(postedById float64) ([]models.Job, error) {
 	return jobs, err
 }
 
-func (s *service) SelectJobByIdAdmin(postedById float64,id int) (models.Job, error) {
-	rows, err := s.db.Query(context.Background(), "SELECT * FROM jobs where id=$1 AND posted_by_id=$2", id,postedById)
+func (s *service) SelectJobByIdAdmin(postedById float64, id int) (models.Job, error) {
+	rows, err := s.db.Query(context.Background(), "SELECT * FROM jobs where id=$1 AND posted_by_id=$2", id, postedById)
 	if err != nil {
 		return models.Job{}, err
 	}
 
-	user,err := s.SelectUserWhereID(postedById);
-	if err!=nil {
-		return models.Job{},err
+	profiles, err := s.SelectProfilesAppliedBy(id)
+	if err != nil {
+		return models.Job{}, err
 	}
 
 	job, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByNameLax[models.Job])
@@ -70,7 +70,7 @@ func (s *service) SelectJobByIdAdmin(postedById float64,id int) (models.Job, err
 		return models.Job{}, err
 	}
 
-	job.PostedBy = user
+	job.Profiles = profiles
 
 	return job, err
 }
